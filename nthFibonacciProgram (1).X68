@@ -1,0 +1,149 @@
+*-----------------------------------------------------------------------------------------------------------------
+* Title      :   Calculate Nth Fibonacci number
+* Written by :   Kunal Goyal
+* Date       :   05/03/2021
+* Description:   This program will calculate Nth Fibonacci number. “N” should be read from the keyboard. 
+*                The program will accept the input number then will check its Fibonacci value for particular index
+*------------------------------------------------------------------------------------------------------------------
+    ORG    $1000
+Start:
+
+LOOP    LEA     MESSAGE,A1     
+        move.b  #14,D0          
+        trap    #15 
+        
+        * Stack frame initialization
+        movea.l #1,a2  
+
+        * Read number from keyboard  
+        move.b #4,d0       
+        trap    #15
+      
+        * Move it to stack
+        move.l d1,-(sp)
+
+        * Call the function              
+        bsr    fibbNum
+      
+        * Pop the fib from the stack and store to fib
+        adda.l #4,sp         
+        move.l d0,fib      
+      
+       * Print the result
+        move    #3,d0
+        move.l fib,d1      
+        trap    #15
+
+        SIMHALT
+      
+* Declare variables
+fib: ds.l 1                
+
+
+fibbNum:
+      
+       * Allocating space and frame
+        move.l a2,-(sp)      
+        move.l sp,a2         
+        suba.l #4,sp         
+
+       * Move number to d0
+        move.l 8(a2),d0  
+
+       * Check number is 0
+        cmp.l #0,d0  
+
+       * if not 0 branch to part1
+        bne    part1
+      
+       * Return 0 if number is 0
+        move.l #0,d0         
+
+       * Deallocation
+        move.l a2,sp         
+      
+       * Restore
+        move.l (sp)+,a2     
+
+       * Return
+        rts
+
+part1:
+       * Move number to do
+       move.l 8(a2),d0      
+      
+       * Check number is 1
+        cmp.l #1,d0   
+
+       * Branch to part 2 if not equal
+        bne    part2          
+      
+       * Return 1 if number is 1
+        move.l #1,d0         
+
+       * Deallocate
+        move.l a2,sp        
+      
+       * Restore
+        move.l (sp)+,a2      
+
+       * Return
+        rts
+
+part2:
+
+       * Move number to d0
+        move.l 8(a2),d0     
+
+       * Subtract one from the number
+        sub.l #1,d0          
+      
+       * Push it to the stack
+        move.l d0,-(sp)      
+      
+       * Compute fib(number-1)
+        bsr    fibbNum           
+
+       * Pop number-1 from the stack
+        adda.l #4,sp         
+
+       * Store the result of fib(number-1) to d0
+        move.l d0,-4(a2)     
+
+       * Move number to d0
+        move.l 8(a2),d0      
+      
+       * Subtract one from the number
+        sub.l #2,d0          
+      
+       * Push it to the stack
+        move.l d0,-(sp)      
+      
+       * Compute fib(number-2)
+        bsr    fibbNum           
+
+       * Pop number-1 from the stack
+        adda.l #4,sp         
+
+       * Compute fib(number-1)+fib(number-2)
+        add.l -4(a2),d0    
+          
+       * Deallocate
+        move.l a2,sp        
+
+       * Restore
+        move.l (sp)+,a2      
+
+        rts
+        
+CR      EQU     $0D         
+LF      EQU     $0A 
+
+MESSAGE DC.B    'Enter a index value between 0 and 20 to Get Fib Number: ',0
+
+End:
+        end Start
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
